@@ -22,8 +22,16 @@ class ItemViewHolder(itemView : View, click : (Int) -> Unit) : RecyclerView.View
     private val item: TextView = itemView.findViewById(R.id.todo_item)
     private val checkbox: ImageView =  itemView.findViewById(R.id.importance_flag)
     private val isDone : CheckBox = itemView.findViewById(R.id.is_done_checkbox)
+    private val deadlineText : TextView = itemView.findViewById(R.id.deadline_text)
     fun bind(task : ToDoItem) {
         item.text = task.text
+
+        deadlineText.text = if(task.deadline != "") {
+            "date: ${task.deadline}"
+        } else {
+            ""
+        }
+
         val checkboxResId = when(task.importance) {
            "mid" -> R.drawable.mid_importance_checkbox_background
            "high" -> R.drawable.high_importance_checkbox_background
@@ -52,6 +60,11 @@ class TodoListAdapter(private var data : MutableList<ToDoItem>, private val onIt
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val task = data[position]
         holder.bind(task)
+    }
+
+    fun deleteItem(pos : Int) {
+        data.removeAt(pos)
+        notifyItemRemoved(pos)
     }
 
 }

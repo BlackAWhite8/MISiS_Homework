@@ -39,6 +39,7 @@ android {
 }
 
 dependencies {
+    implementation("it.xabaras.android:recyclerview-swipedecorator:1.4")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("com.google.code.gson:gson:2.11.0")
     implementation(libs.androidx.core.ktx)

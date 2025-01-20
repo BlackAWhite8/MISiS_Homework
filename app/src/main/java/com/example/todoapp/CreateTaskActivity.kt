@@ -37,6 +37,9 @@ class CreateTaskActivity : AppCompatActivity() {
         if (jsonItem != "None") {
             item = gson.fromJson(jsonItem, ToDoItem::class.java)
             fillData(item, binding)
+        } else {
+            binding.deleteTask.visibility = View.GONE
+
         }
 
         binding.deleteTask.setOnClickListener {

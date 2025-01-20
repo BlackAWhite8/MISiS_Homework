@@ -1,16 +1,22 @@
 package com.example.todoapp
 
+import android.R
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Canvas
 import android.os.Build
 import android.os.Bundle
-import android.widget.CheckBox
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.databinding.ActivityMainBinding
 import com.google.gson.GsonBuilder
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.runBlocking
 
 
@@ -24,7 +30,7 @@ class MainActivity : AppCompatActivity() {
             val resultIntent: Intent? = result.data
             val jsonResult = resultIntent?.getStringExtra("result")
             val taskStatus = resultIntent?.getBooleanExtra("newTask", false)
-            val itemPos = resultIntent?.getIntExtra("position", -1)
+            val itemPos = resultIntent?.getIntExtra("position", 0)
             val deleteFlag = resultIntent?.getBooleanExtra("delete", false)
             if (taskStatus != null) {
                 updateData(jsonResult, taskStatus, itemPos, data, todoAdapter, deleteFlag)
@@ -37,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         runBlocking {  data = dataManager.getElements() }
         val clicker : (ToDoItem, Int) -> Unit = ::recyclerItemClick // function as variable
         todoAdapter = TodoListAdapter(data, clicker)
@@ -48,6 +53,59 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("item", "None")
             resultLauncher.launch(intent)
         }
+
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                todoAdapter.deleteItem(viewHolder.adapterPosition)
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+
+                RecyclerViewSwipeDecorator.Builder(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+                    .addBackgroundColor(
+                        ResourcesCompat.getColor(resources, R.color.holo_red_light, null)
+                    )
+                    .addActionIcon(R.drawable.ic_menu_delete)
+                    .create()
+                    .decorate()
+
+                super.onChildDraw(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+            }
+
+        })
+        itemTouchHelper.attachToRecyclerView(binding.todoRecycler)
 
 
     }
